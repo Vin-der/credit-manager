@@ -211,6 +211,36 @@ input:focus, select:focus { border-color: var(--accent); }
 
 .card + .card { margin-top: 16px; }
 
+
+.section-subtitle {
+  margin: -10px 0 0;
+  color: var(--muted);
+  font-size: .88rem;
+  line-height: 1.35;
+}
+
+.backup-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.backup-actions .main-btn,
+.backup-actions .ghost-btn {
+  min-width: 150px;
+}
+
+.backup-status {
+  color: var(--muted);
+  margin: 12px 0 0;
+  font-size: .9rem;
+  line-height: 1.4;
+}
+
+.backup-status.success { color: var(--green); font-weight: 700; }
+.backup-status.error { color: var(--red); font-weight: 700; }
+
+
 @media (max-width: 760px) {
   .app { padding: 18px; }
   .dashboard { grid-template-columns: 1fr 1fr; }
@@ -219,6 +249,8 @@ input:focus, select:focus { border-color: var(--accent); }
 
 @media (max-width: 520px) {
   .grid.two, .recommendations { grid-template-columns: 1fr; }
+  .backup-actions { display: grid; grid-template-columns: 1fr; }
+  .backup-actions .main-btn, .backup-actions .ghost-btn { width: 100%; }
   .dashboard { grid-template-columns: 1fr; }
   .metric.primary { grid-column: span 1; }
   .section-title { align-items: flex-start; }

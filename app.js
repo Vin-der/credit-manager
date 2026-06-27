@@ -22,17 +22,65 @@ const els = {
   movementList: document.getElementById('movementList'),
   emptyState: document.getElementById('emptyState'),
   clearBtn: document.getElementById('clearBtn'),
-  themeBtn: document.getElementById('themeBtn')
+  themeBtn: document.getElementById('themeBtn'),
+  exportBtn: document.getElementById('exportBtn'),
+  importBtn: document.getElementById('importBtn'),
+  importFile: document.getElementById('importFile'),
+  backupStatus: document.getElementById('backupStatus')
 };
 
-let state = JSON.parse(localStorage.getItem('creditManagerState')) || {
+const defaultState = {
   settings: { creditLimit: 10000, currency: 'PLN', cutDay: 12, payDay: 30 },
   movements: [],
   dark: false
 };
 
+let state = JSON.parse(localStorage.getItem('creditManagerState')) || structuredClone(defaultState);
+
 function save() {
   localStorage.setItem('creditManagerState', JSON.stringify(state));
+}
+
+function setBackupStatus(message, type = '') {
+  els.backupStatus.textContent = message;
+  els.backupStatus.className = `backup-status ${type}`.trim();
+}
+
+function getSafeFileDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function normalizeImportedState(imported) {
+  const importedState = imported?.state || imported;
+  if (!importedState || typeof importedState !== 'object') {
+    throw new Error('Archivo inválido.');
+  }
+
+  const settings = {
+    ...defaultState.settings,
+    ...(importedState.settings || {})
+  };
+
+  settings.creditLimit = Number(settings.creditLimit) || defaultState.settings.creditLimit;
+  settings.currency = String(settings.currency || 'PLN').toUpperCase().slice(0, 4);
+  settings.cutDay = Math.min(Math.max(Number(settings.cutDay) || 12, 1), 31);
+  settings.payDay = Math.min(Math.max(Number(settings.payDay) || 30, 1), 31);
+
+  const movements = Array.isArray(importedState.movements)
+    ? importedState.movements.map(item => ({
+        id: item.id || crypto.randomUUID(),
+        date: item.date || new Date().toISOString().slice(0, 10),
+        type: item.type === 'payment' ? 'payment' : 'charge',
+        description: String(item.description || 'Movimiento').trim(),
+        amount: Math.max(Number(item.amount) || 0, 0)
+      })).filter(item => item.amount > 0)
+    : [];
+
+  return {
+    settings,
+    movements,
+    dark: Boolean(importedState.dark)
+  };
 }
 
 function money(value) {
@@ -194,6 +242,57 @@ els.themeBtn.addEventListener('click', () => {
   state.dark = !state.dark;
   save();
   render();
+});
+
+
+els.exportBtn.addEventListener('click', () => {
+  const payload = {
+    app: 'Credit Manager',
+    version: '3.0',
+    exportedAt: new Date().toISOString(),
+    state
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `credit-manager-backup-${getSafeFileDate()}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  setBackupStatus('Datos exportados. Guarda ese archivo e impórtalo en el otro dispositivo.', 'success');
+});
+
+els.importBtn.addEventListener('click', () => {
+  els.importFile.click();
+});
+
+els.importFile.addEventListener('change', async e => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const imported = JSON.parse(text);
+    const newState = normalizeImportedState(imported);
+
+    const confirmMessage = `Esto reemplazará los datos actuales por ${newState.movements.length} movimientos importados. ¿Continuar?`;
+    if (!confirm(confirmMessage)) {
+      e.target.value = '';
+      setBackupStatus('Importación cancelada. Tus datos actuales no cambiaron.');
+      return;
+    }
+
+    state = newState;
+    save();
+    render();
+    setBackupStatus(`Importación completada: ${state.movements.length} movimientos cargados.`, 'success');
+  } catch (error) {
+    setBackupStatus('No pude importar el archivo. Revisa que sea un backup JSON de Credit Manager.', 'error');
+  } finally {
+    e.target.value = '';
+  }
 });
 
 els.date.valueAsDate = new Date();
