@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Credit Manager</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Control inteligente</p>
+        <h1>Credit Manager</h1>
+        <p class="subtitle">Optimiza tu tarjeta antes del corte y evita afectar tu récord.</p>
+      </div>
+      <button id="themeBtn" class="icon-btn" aria-label="Cambiar tema">☾</button>
+    </section>
+
+    <section class="card settings-card">
+      <h2>Configuración</h2>
+      <div class="grid two">
+        <label>Límite de crédito
+          <input id="creditLimit" type="number" min="0" step="0.01" value="10000" />
+        </label>
+        <label>Moneda
+          <input id="currency" type="text" value="PLN" maxlength="4" />
+        </label>
+        <label>Día de corte
+          <input id="cutDay" type="number" min="1" max="31" value="12" />
+        </label>
+        <label>Día de pago
+          <input id="payDay" type="number" min="1" max="31" value="30" />
+        </label>
+      </div>
+    </section>
+
+    <section class="dashboard">
+      <article class="metric primary">
+        <span>Saldo actual</span>
+        <strong id="currentBalance">0 PLN</strong>
+      </article>
+      <article class="metric">
+        <span>Utilización</span>
+        <strong id="usagePercent">0%</strong>
+      </article>
+      <article class="metric">
+        <span>Próximo corte</span>
+        <strong id="nextCut">--</strong>
+      </article>
+      <article class="metric">
+        <span>Próximo pago</span>
+        <strong id="nextPay">--</strong>
+      </article>
+    </section>
+
+    <section class="card gauge-card">
+      <div class="section-title">
+        <h2>Estado de utilización</h2>
+        <span id="statusBadge" class="badge green">Excelente</span>
+      </div>
+      <div class="progress-wrap">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+      <div class="legend">
+        <span>🟢 0–10%</span>
+        <span>🟡 10–30%</span>
+        <span>🔴 +30%</span>
+      </div>
+    </section>
+
+    <section class="card advice-card">
+      <h2>Pago recomendado antes del corte</h2>
+      <div class="recommendations">
+        <div>
+          <span>Pago necesario para quedar en 10%</span>
+          <strong id="payTo10">0 PLN</strong>
+          <small id="roomTo10" class="recommendation-note">--</small>
+        </div>
+        <div>
+          <span>Pago necesario para quedar en 30%</span>
+          <strong id="payTo30">0 PLN</strong>
+          <small id="roomTo30" class="recommendation-note">--</small>
+        </div>
+      </div>
+      <p id="smartAdvice" class="advice-text">Registra tus movimientos para recibir recomendaciones.</p>
+    </section>
+
+    <section class="card form-card">
+      <h2>Registrar movimiento</h2>
+      <form id="movementForm">
+        <div class="grid two">
+          <label>Fecha
+            <input id="date" type="date" required />
+          </label>
+          <label>Tipo
+            <select id="type">
+              <option value="charge">Compra</option>
+              <option value="payment">Pago</option>
+            </select>
+          </label>
+        </div>
+        <label>Descripción
+          <input id="description" type="text" placeholder="Ej. Lidl, Amazon, Pago tarjeta" required />
+        </label>
+        <label>Monto
+          <input id="amount" type="number" min="0.01" step="0.01" placeholder="0.00" required />
+        </label>
+        <button class="main-btn" type="submit">Agregar movimiento</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>Movimientos</h2>
+        <button id="clearBtn" class="ghost-btn">Borrar todo</button>
+      </div>
+      <div id="emptyState" class="empty">Aún no tienes movimientos registrados.</div>
+      <div id="movementList" class="movement-list"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
